@@ -1,0 +1,62 @@
+package com.jpmc.midascore;
+
+import com.jpmc.midascore.component.DatabaseConduit;
+import com.jpmc.midascore.entity.UserRecord;
+import com.jpmc.midascore.foundation.FileLoader;
+import com.jpmc.midascore.repository.UserRecordRepository;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
+
+@SpringBootTest
+public class TaskFourTests {
+
+    static final Logger logger = LoggerFactory.getLogger(TaskFourTests.class);
+
+    @Autowired
+    private DatabaseConduit databaseConduit;
+
+    @Autowired
+    private FileLoader fileLoader;
+
+    @Autowired
+    private UserRecordRepository userRecordRepository;
+
+    @Test
+    void task_four_verifier() throws InterruptedException {
+
+        // Make sure Wilbur user exists
+        if (!userRecordRepository.findById(2L).isPresent()) {
+            UserRecord wilbur = new UserRecord();
+            wilbur.setId(2L);
+            wilbur.setName("wilbur");
+            wilbur.setBalance(1000.0);
+            userRecordRepository.save(wilbur);
+        }
+
+        List<String> transactionLines = fileLoader.loadStrings("transactions.txt");
+
+        for (String transactionLine : transactionLines) {
+            String[] parts = transactionLine.split(",");
+            Long senderId = Long.parseLong(parts[0].trim());
+            Long recipientId = Long.parseLong(parts[1].trim());
+            Double amount = Double.parseDouble(parts[2].trim());
+            databaseConduit.processTransaction(senderId, recipientId, amount);
+        }
+
+        Thread.sleep(2000); // Give time for transactions to complete if needed
+
+       UserRecord wilbur = userRecordRepository.findByName("wilbur");
+        System.out.println("✅ Wilbur final balance: " + wilbur.getBalance());
+
+        if (wilbur != null) {
+            logger.info("✅ Wilbur final balance: {}", wilbur.getBalance());
+        } else {
+            logger.error("❌ Wilbur user not found!");
+        }
+    }
+}

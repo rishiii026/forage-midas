@@ -1,16 +1,13 @@
 package com.jpmc.midascore.foundation;
 
-import org.springframework.stereotype.Component;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-@Component  // ✅ So Spring can @Autowired it!
 public class FileLoader {
-    public List<String> loadStrings(String fileName) {
+    public List<String> loadStrings(String path) {
         try {
-            return Files.readAllLines(Paths.get("src/main/resources/" + fileName));
+            return Files.readAllLines(Paths.get(path));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

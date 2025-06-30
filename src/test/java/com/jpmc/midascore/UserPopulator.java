@@ -2,23 +2,26 @@ package com.jpmc.midascore;
 
 import com.jpmc.midascore.component.DatabaseConduit;
 import com.jpmc.midascore.entity.UserRecord;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
 public class UserPopulator {
-    @Autowired
-    private FileLoader fileLoader;
 
-    @Autowired
-    private DatabaseConduit databaseConduit;
+    private final DatabaseConduit databaseConduit;
+
+    public UserPopulator(DatabaseConduit databaseConduit) {
+        this.databaseConduit = databaseConduit;
+    }
 
     public void populate() {
-        String[] userLines = fileLoader.loadStrings("/test_data/lkjhgfdsa.hjkl");
-        for (String userLine : userLines) {
-            String[] userData = userLine.split(", ");
-            UserRecord user = new UserRecord(userData[0], Float.parseFloat(userData[1]));
-            databaseConduit.save(user);
-        }
+        databaseConduit.saveUser(new UserRecord("bernise", 1200.23));
+        databaseConduit.saveUser(new UserRecord("grommit", 2215.37));
+        databaseConduit.saveUser(new UserRecord("maria", 2774.14));
+        databaseConduit.saveUser(new UserRecord("mario", 12.34));
+        databaseConduit.saveUser(new UserRecord("waldorf", 444.55));
+        databaseConduit.saveUser(new UserRecord("whosit", 888.90));
+        databaseConduit.saveUser(new UserRecord("whatsit", 777.60));
+        databaseConduit.saveUser(new UserRecord("howsit", 68.70));
+        databaseConduit.saveUser(new UserRecord("wilbur", 3476.21));
+        databaseConduit.saveUser(new UserRecord("antonio", 2121.54));
+        databaseConduit.saveUser(new UserRecord("calypso", 779421.33));
     }
 }

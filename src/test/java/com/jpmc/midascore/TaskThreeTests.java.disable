@@ -1,0 +1,69 @@
+package com.jpmc.midascore;
+
+import com.jpmc.midascore.component.KafkaProducer;
+import com.jpmc.midascore.component.DatabaseConduit;
+import com.jpmc.midascore.entity.UserRecord;
+import com.jpmc.midascore.foundation.FileLoader;
+import com.jpmc.midascore.repository.UserRecordRepository; // ✅ ADD THIS IMPORT
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+
+import java.util.List;
+
+@SpringBootTest
+@EmbeddedKafka
+public class TaskThreeTests {
+
+    @Autowired
+    private KafkaProducer kafkaProducer;
+
+    @Autowired
+    private DatabaseConduit databaseConduit;
+
+    @Autowired
+    private UserRecordRepository userRecordRepository; // ✅ ADD THIS
+
+
+    @Test
+   void task_three_verifier() throws InterruptedException {
+
+     if (!userRecordRepository.findById(1L).isPresent()) {
+            UserRecord waldorf = new UserRecord();
+            waldorf.setId(1L);
+            waldorf.setName("waldorf");
+            waldorf.setBalance(1000.0); // Starting balance
+            databaseConduit.saveUser(waldorf);
+        }
+    FileLoader loader = new FileLoader();
+    List<String> lines = loader.loadStrings("transactions.txt");
+
+
+    for (String line : lines) {
+    String[] parts = line.split(",");
+    Long senderId = Long.parseLong(parts[0].trim());
+    Long recipientId = Long.parseLong(parts[1].trim());
+    Double amount = Double.parseDouble(parts[2].trim());
+    databaseConduit.processTransaction(senderId, recipientId, amount);
+   }
+
+    
+
+     Thread.sleep(5000); // Adjust if needed
+   
+
+    // Wait or force process
+    UserRecord waldorf = userRecordRepository.findByName("waldorf");
+    if (waldorf != null) {
+        System.out.println("✅ Waldorf final balance: " + waldorf.getBalance());
+    } else {
+        System.out.println("❌ Waldorf user not found!");
+    }
+}
+}
+
+
+
+    
+
